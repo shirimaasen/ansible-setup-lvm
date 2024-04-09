@@ -1,0 +1,35 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Install LVM2 package
+      package:
+        name: lvm2
+        state: present
+
+    - name: Create Physical Volume
+      community.general.pvcreate:
+        device: /dev/sdh
+
+    - name: Create Volume Group
+      community.general.vgcreate:
+        vg: vg_var
+        pvs: /dev/sdh
+
+    - name: Create Logical Volume
+      community.general.lvcreate:
+        vg: vg_var
+        lv: lv_var
+        size: 100%VG
+
+    - name: Format the logical volume with ext4
+      filesystem:
+        fstype: ext4
+        dev: /dev/vg_var/lv_var
+
+    - name: Mount the logical volume
+      ansible.builtin.mount:
+        path: /mnt/new_var
+        src: /dev/vg_var/lv_var
+        fstype: ext4
+        state: mounted
